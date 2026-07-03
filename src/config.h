@@ -24,6 +24,10 @@ constexpr uint32_t CONTROL_INTERVAL_MS = 200;
 // Falls das Relais invertiert reagiert, auf false setzen.
 constexpr bool RELAY_ACTIVE_LOW = true;
 
+// ===================== LED-Selbsttest ===================
+// Beim Start alle LEDs so lange einschalten (Funktionskontrolle)
+constexpr uint32_t LED_SELFTEST_MS = 2000;
+
 // ===================== Fehler-Erkennung =================
 // Dauerfluss länger als diese Zeit => rote LED (mögliches Leck).
 // 0 = deaktiviert.

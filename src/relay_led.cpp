@@ -24,11 +24,11 @@ void begin() {
   pinMode(PIN_LED_GREEN, OUTPUT);
   pinMode(PIN_LED_RED, OUTPUT);
 
-  // Kurzer Selbsttest: alle LEDs 300 ms an
+  // Selbsttest beim Start: alle LEDs 2 s an (Funktionskontrolle)
   digitalWrite(PIN_LED_BLUE, HIGH);
   digitalWrite(PIN_LED_GREEN, HIGH);
   digitalWrite(PIN_LED_RED, HIGH);
-  delay(300);
+  delay(LED_SELFTEST_MS);
   digitalWrite(PIN_LED_BLUE, LOW);
   digitalWrite(PIN_LED_GREEN, LOW);
   digitalWrite(PIN_LED_RED, LOW);
