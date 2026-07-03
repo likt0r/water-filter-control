@@ -1,0 +1,13 @@
+# Wokwi-Simulation — siehe WOKWI.md
+# Firmware kommt aus dem PlatformIO-Build (vorher `pio run` ausführen).
+[wokwi]
+version = 1
+firmware = '.pio/build/az-delivery-devkit-v4/firmware.bin'
+elf = '.pio/build/az-delivery-devkit-v4/firmware.elf'
+
+# Custom-Chip, der den Wasserfluss-Sensor (Impulse) simuliert.
+# Die .wasm muss einmalig gebaut werden (siehe WOKWI.md) — in der
+# Wokwi-Web-IDE geschieht das automatisch, für die CLI lokal bauen.
+[[chip]]
+name = 'flow-pulse'
+binary = 'chips/flow-pulse.chip.wasm'

@@ -1,3 +1,7 @@
 .pio/
 compile_commands.json
 .cache/
+
+# Wokwi: gebauter Custom-Chip + heruntergeladener API-Header
+chips/*.chip.wasm
+chips/wokwi-api.h

@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "author": "water-filter-control",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+
+    { "type": "wokwi-relay-module", "id": "relay", "top": -120, "left": 200,
+      "attrs": {} },
+
+    { "type": "chip-flow-pulse", "id": "flow", "top": 130, "left": 200,
+      "attrs": { "lpm": "10" } },
+
+    { "type": "wokwi-led", "id": "led_blue",  "top": 40,  "left": -160, "attrs": { "color": "blue" } },
+    { "type": "wokwi-led", "id": "led_green", "top": 100, "left": -160, "attrs": { "color": "green" } },
+    { "type": "wokwi-led", "id": "led_red",   "top": 160, "left": -160, "attrs": { "color": "red" } },
+
+    { "type": "wokwi-resistor", "id": "r_blue",  "top": 40,  "left": -60, "attrs": { "value": "330" } },
+    { "type": "wokwi-resistor", "id": "r_green", "top": 100, "left": -60, "attrs": { "value": "330" } },
+    { "type": "wokwi-resistor", "id": "r_red",   "top": 160, "left": -60, "attrs": { "value": "330" } }
+  ],
+  "connections": [
+    [ "esp:TX0", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX0", "$serialMonitor:TX", "", [] ],
+
+    [ "esp:D26", "relay:IN",  "green", [] ],
+    [ "esp:5V",  "relay:VCC", "red",   [] ],
+    [ "esp:GND.1", "relay:GND", "black", [] ],
+
+    [ "flow:OUT", "esp:D27", "purple", [] ],
+    [ "flow:GND", "esp:GND.2", "black", [] ],
+
+    [ "esp:D33", "r_blue:1",  "blue",  [] ],
+    [ "r_blue:2", "led_blue:A", "blue", [] ],
+    [ "led_blue:C", "esp:GND.3", "black", [] ],
+
+    [ "esp:D25", "r_green:1", "green", [] ],
+    [ "r_green:2", "led_green:A", "green", [] ],
+    [ "led_green:C", "esp:GND.3", "black", [] ],
+
+    [ "esp:D32", "r_red:1", "orange", [] ],
+    [ "r_red:2", "led_red:A", "orange", [] ],
+    [ "led_red:C", "esp:GND.3", "black", [] ]
+  ],
+  "dependencies": {}
+}
