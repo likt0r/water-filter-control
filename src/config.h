@@ -24,9 +24,9 @@ constexpr uint32_t FLOW_START_MIN_PULSES = 4;
 constexpr uint32_t CONTROL_INTERVAL_MS = 200;
 
 // ===================== Relais ===========================
-// MakerFactory-Modul mit SRD-05VDC-SL-C: IN ist Low-aktiv.
-// Falls das Relais invertiert reagiert, auf false setzen.
-constexpr bool RELAY_ACTIVE_LOW = true;
+// MakerFactory-Modul mit SRD-05VDC-SL-C: dieses Exemplar ist High-aktiv
+// (IN HIGH = Relais/Ozon EIN). Am Board verifiziert.
+constexpr bool RELAY_ACTIVE_LOW = false;
 
 // ===================== LED-Selbsttest ===================
 // Beim Start alle LEDs so lange einschalten (Funktionskontrolle)
