@@ -2,7 +2,6 @@
 // Erzeugt am Pin OUT ein Rechtecksignal mit F = 6,6 * Q  (Q = L/min, Regler "lpm").
 // => Firmware zaehlt 396 Impulse/Liter und liest die Durchflussrate korrekt.
 #include "wokwi-api.h"
-#include <stdlib.h>
 
 typedef struct {
   pin_t    pin_out;
@@ -10,6 +9,9 @@ typedef struct {
   timer_t  timer;
   uint8_t  level;
 } chip_state_t;
+
+// Einzelinstanz statisch (kein malloc -> keine libc noetig)
+static chip_state_t chip_state;
 
 static void on_timer(void *user_data) {
   chip_state_t *chip = (chip_state_t *)user_data;
@@ -33,7 +35,8 @@ static void on_timer(void *user_data) {
 }
 
 void chip_init(void) {
-  chip_state_t *chip = (chip_state_t *)calloc(1, sizeof(chip_state_t));
+  chip_state_t *chip = &chip_state;
+  chip->level = 0;
   chip->pin_out = pin_init("OUT", OUTPUT);
   chip->lpm_attr = attr_init_float("lpm", 10.0f);
 

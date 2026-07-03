@@ -8,9 +8,9 @@ CLANG ?= clang
 SOURCES = flow-pulse.chip.c
 
 flow-pulse.chip.wasm: $(SOURCES) wokwi-api.h
-	$(CLANG) --target=wasm32-unknown-wasi -nostartfiles -Wl,--import-memory \
-	  -Wl,--export-table -Wl,--no-entry -Wl,--export=chip_init \
-	  -Wl,--allow-undefined -o $@ $(SOURCES)
+	$(CLANG) --target=wasm32 -Os -flto -nostdlib \
+	  -Wl,--import-memory -Wl,--export-table -Wl,--no-entry \
+	  -Wl,--export=chip_init -Wl,--allow-undefined -o $@ $(SOURCES)
 
 clean:
 	rm -f flow-pulse.chip.wasm
