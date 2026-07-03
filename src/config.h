@@ -1,0 +1,38 @@
+#pragma once
+
+// ===================== Pin-Belegung =====================
+// Siehe Schaltplan im Plan. Vermeidet Strapping-/Input-only-/Flash-Pins.
+constexpr int PIN_FLOW_SENSOR = 27; // Gelbe Ader, über Spannungsteiler 10k/20k
+constexpr int PIN_RELAY       = 26; // Relaismodul IN
+constexpr int PIN_LED_BLUE    = 33; // Wasserfluss
+constexpr int PIN_LED_GREEN   = 25; // Relais/Ozon aktiv
+constexpr int PIN_LED_RED     = 32; // Fehler
+
+// ===================== Flow-Sensor ======================
+// G3/4" Messing-Hall-Sensor (YF-B6-Typ): F = 6,6 * Q  (F in Hz, Q in L/min)
+// => 6,6 * 60 = 396 Impulse pro Liter. Bei Bedarf nachkalibrieren.
+constexpr float PULSES_PER_LITER = 396.0f;
+
+// Kein Impuls für diese Dauer => Wasserfluss gilt als beendet
+constexpr uint32_t FLOW_TIMEOUT_MS = 1500;
+
+// Abtastintervall der Steuerlogik
+constexpr uint32_t CONTROL_INTERVAL_MS = 200;
+
+// ===================== Relais ===========================
+// MakerFactory-Modul mit SRD-05VDC-SL-C: IN ist Low-aktiv.
+// Falls das Relais invertiert reagiert, auf false setzen.
+constexpr bool RELAY_ACTIVE_LOW = true;
+
+// ===================== Fehler-Erkennung =================
+// Dauerfluss länger als diese Zeit => rote LED (mögliches Leck).
+// 0 = deaktiviert.
+constexpr uint32_t CONTINUOUS_FLOW_ALERT_MS = 30UL * 60UL * 1000UL; // 30 min
+
+// ===================== Persistenz (NVS) =================
+// Während aktivem Fluss spätestens alle X ms speichern
+constexpr uint32_t SAVE_INTERVAL_MS = 10000;
+
+// ===================== SoftAP / Webseite ================
+constexpr char AP_SSID[]     = "Wasserfilter";
+constexpr char AP_PASSWORD[] = "ozon1234"; // min. 8 Zeichen (WPA2)

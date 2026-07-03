@@ -1,0 +1,27 @@
+[
+  {
+    "label": "PIO Build",
+    "command": "pio run",
+    "reveal": "always"
+  },
+  {
+    "label": "PIO Upload",
+    "command": "pio run -t upload",
+    "reveal": "always"
+  },
+  {
+    "label": "PIO Monitor",
+    "command": "pio device monitor -b 115200",
+    "reveal": "always"
+  },
+  {
+    "label": "PIO Clean",
+    "command": "pio run -t clean",
+    "reveal": "always"
+  },
+  {
+    "label": "PIO Compiledb (clangd)",
+    "command": "pio run -t compiledb",
+    "reveal": "always"
+  }
+]
