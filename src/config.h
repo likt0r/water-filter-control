@@ -16,6 +16,10 @@ constexpr float PULSES_PER_LITER = 396.0f;
 // Kein Impuls für diese Dauer => Wasserfluss gilt als beendet
 constexpr uint32_t FLOW_TIMEOUT_MS = 1500;
 
+// Mindestimpulse im 1-s-Fenster, damit "Fluss" erkannt wird (Rauschfilter).
+// Echter Fluss: >= 6,6 Hz (1 L/min). Stoerimpulse auf offener Leitung: << 1 Hz.
+constexpr uint32_t FLOW_START_MIN_PULSES = 4;
+
 // Abtastintervall der Steuerlogik
 constexpr uint32_t CONTROL_INTERVAL_MS = 200;
 

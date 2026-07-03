@@ -9,12 +9,15 @@ volatile uint32_t pulseCount = 0; // von der ISR erhöht
 portMUX_TYPE pulseMux = portMUX_INITIALIZER_UNLOCKED;
 
 double total = 0.0;          // Liter, rücksetzbar
-uint32_t lastPulseMs = 0;    // Zeitpunkt des letzten verarbeiteten Impulses
+uint32_t lastActiveMs = 0;   // letzter Zeitpunkt mit Impulsrate über der Schwelle
 uint32_t startMs = 0;        // Beginn des aktuellen Flusses
 bool flowing = false;
 float rateLpm = 0.0f;        // geglättete Rate
 
-uint32_t lastUpdateMs = 0;
+// Gleitendes 1-s-Fenster als Rauschfilter (Buckets à CONTROL_INTERVAL_MS)
+constexpr int WINDOW_BUCKETS = 1000 / CONTROL_INTERVAL_MS;
+uint32_t window[WINDOW_BUCKETS] = {0};
+int windowIdx = 0;
 
 void IRAM_ATTR onPulse() {
   portENTER_CRITICAL_ISR(&pulseMux);
@@ -26,7 +29,10 @@ void IRAM_ATTR onPulse() {
 
 void begin(double initialTotalLiters) {
   total = initialTotalLiters;
-  pinMode(PIN_FLOW_SENSOR, INPUT); // externer Teiler zieht auf GND
+  // Interner Pulldown haelt den Pin auch ohne angeschlossenen Sensor/Teiler
+  // auf LOW (sonst Stoerimpulse -> Phantomzaehlung/Relais-Flattern).
+  // Mit Teiler: 45k intern parallel zu 20k extern -> HIGH ~3,08 V, sicher.
+  pinMode(PIN_FLOW_SENSOR, INPUT_PULLDOWN);
   attachInterrupt(digitalPinToInterrupt(PIN_FLOW_SENSOR), onPulse, FALLING);
 }
 
@@ -37,27 +43,34 @@ void update(uint32_t nowMs) {
   pulseCount = 0;
   portEXIT_CRITICAL(&pulseMux);
 
-  uint32_t dtMs = nowMs - lastUpdateMs;
-  lastUpdateMs = nowMs;
+  // Gleitendes 1-s-Fenster fortschreiben
+  window[windowIdx] = pulses;
+  windowIdx = (windowIdx + 1) % WINDOW_BUCKETS;
+  uint32_t windowSum = 0;
+  for (int i = 0; i < WINDOW_BUCKETS; i++) windowSum += window[i];
 
-  if (pulses > 0) {
+  // Volumen nur bei erkanntem Fluss zaehlen (filtert Stoerimpulse aus)
+  if (flowing) {
     total += (double)pulses / PULSES_PER_LITER;
-    lastPulseMs = nowMs;
+  }
+
+  if (windowSum >= FLOW_START_MIN_PULSES) {
     if (!flowing) {
       flowing = true;
       startMs = nowMs;
+      // Impulse der Anlaufphase (letzte Sekunde) nachholen
+      total += (double)windowSum / PULSES_PER_LITER;
     }
-  } else if (flowing && (nowMs - lastPulseMs) >= FLOW_TIMEOUT_MS) {
+    lastActiveMs = nowMs;
+  } else if (flowing && (nowMs - lastActiveMs) >= FLOW_TIMEOUT_MS) {
     flowing = false;
     startMs = 0;
   }
 
-  // Rate: Impulse pro Intervall -> Hz -> L/min (Q = f / 6,6), leicht geglättet
-  if (dtMs > 0) {
-    float hz = (float)pulses * 1000.0f / (float)dtMs;
-    float instantLpm = hz * 60.0f / PULSES_PER_LITER;
-    rateLpm = flowing ? (0.7f * rateLpm + 0.3f * instantLpm) : 0.0f;
-  }
+  // Rate aus dem 1-s-Fenster: Hz -> L/min (Q = f / 6,6), leicht geglättet
+  float hz = (float)windowSum * 1000.0f / (float)(WINDOW_BUCKETS * CONTROL_INTERVAL_MS);
+  float instantLpm = hz * 60.0f / PULSES_PER_LITER;
+  rateLpm = flowing ? (0.7f * rateLpm + 0.3f * instantLpm) : 0.0f;
 }
 
 bool isFlowing() { return flowing; }
