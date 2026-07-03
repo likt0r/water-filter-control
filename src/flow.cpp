@@ -29,10 +29,11 @@ void IRAM_ATTR onPulse() {
 
 void begin(double initialTotalLiters) {
   total = initialTotalLiters;
-  // Interner Pulldown haelt den Pin auch ohne angeschlossenen Sensor/Teiler
-  // auf LOW (sonst Stoerimpulse -> Phantomzaehlung/Relais-Flattern).
-  // Mit Teiler: 45k intern parallel zu 20k extern -> HIGH ~3,08 V, sicher.
-  pinMode(PIN_FLOW_SENSOR, INPUT_PULLDOWN);
+  // Hochohmiger Eingang: der externe Teiler definiert den Pegel.
+  // KEIN interner Pulldown — er laege parallel zum unteren Teilerwiderstand
+  // und drueckt den HIGH-Pegel unter die Schwelle (bei 16k/22k: 2,9V -> 2,4V).
+  // Stoerimpulse auf offener Leitung filtert die Software (FLOW_START_MIN_PULSES).
+  pinMode(PIN_FLOW_SENSOR, INPUT);
   attachInterrupt(digitalPinToInterrupt(PIN_FLOW_SENSOR), onPulse, FALLING);
 }
 
