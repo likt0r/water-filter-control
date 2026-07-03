@@ -35,8 +35,8 @@ void loop() {
   flow::update(now);
   bool flowing = flow::isFlowing();
 
-  // Blau = Sensor sieht Fluss; Relais/Ozon folgt dem Fluss; Gruen folgt Relais
-  relay_led::setFlowLed(flowing);
+  // Blau = Durchfluss-Helligkeit (wenig=gedimmt, viel=hell); Gruen folgt Relais
+  relay_led::setFlowLevel(flowing, flow::flowRateLpm());
   relay_led::setRelay(flowing);
 
   // Persistenz: beim Fluss-Ende sofort, waehrend des Flusses periodisch

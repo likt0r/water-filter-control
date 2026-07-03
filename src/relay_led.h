@@ -11,8 +11,9 @@ void begin();
 void setRelay(bool on);
 bool relayOn();
 
-// Blaue LED: Wasser fließt
-void setFlowLed(bool on);
+// Blaue LED: Helligkeit spiegelt den Durchfluss (per PWM).
+// flowing=false -> aus; sonst Helligkeit proportional zu lpm (mit Floor).
+void setFlowLevel(bool flowing, float lpm);
 
 // Rote LED: Fehlerzustand
 void setErrorLed(bool on);

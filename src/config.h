@@ -32,6 +32,16 @@ constexpr bool RELAY_ACTIVE_LOW = false;
 // Beim Start alle LEDs so lange einschalten (Funktionskontrolle)
 constexpr uint32_t LED_SELFTEST_MS = 2000;
 
+// ===================== Blaue LED: Helligkeit ~ Durchfluss =====
+// Die blaue LED wird per PWM (LEDC) gedimmt: wenig Durchfluss = schwach,
+// ab FLOW_LED_MAX_LPM = volle Helligkeit.
+constexpr int      LEDC_CHANNEL_BLUE = 0;
+constexpr int      LEDC_FREQ_HZ      = 5000; // flimmerfrei
+constexpr int      LEDC_RES_BITS     = 8;    // Duty 0..255
+constexpr float    FLOW_LED_MAX_LPM  = 15.0f; // ab hier max. Helligkeit
+constexpr int      FLOW_LED_MIN_DUTY = 20;   // Mindesthelligkeit bei Fluss (sichtbar)
+constexpr int      FLOW_LED_MAX_DUTY = 255;  // volle Helligkeit
+
 // ===================== Fehler-Erkennung =================
 // Dauerfluss länger als diese Zeit => rote LED (mögliches Leck).
 // 0 = deaktiviert.
