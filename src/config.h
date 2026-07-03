@@ -45,7 +45,7 @@ constexpr int      FLOW_LED_MAX_DUTY = 255;  // volle Helligkeit
 // ===================== Fehler-Erkennung =================
 // Dauerfluss länger als diese Zeit => rote LED (mögliches Leck).
 // 0 = deaktiviert.
-constexpr uint32_t CONTINUOUS_FLOW_ALERT_MS = 30UL * 60UL * 1000UL; // 30 min
+constexpr uint32_t CONTINUOUS_FLOW_ALERT_MS = 60UL * 60UL * 1000UL; // 60 min
 
 // ===================== Persistenz (NVS) =================
 // Während aktivem Fluss spätestens alle X ms speichern
