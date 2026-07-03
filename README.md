@@ -21,7 +21,7 @@ Knopf zum Zurücksetzen des Zählers.
 | Board | AZ-Delivery ESP32 DevKit C V4 (WROOM-32) |
 | Flow-Sensor | G3/4" Messing-Hall-Sensor (YF-B6-Typ), 1–30 L/min, `F = 6,6 · Q` → ~396 Impulse/L |
 | Relais | MakerFactory-Modul mit SRD-05VDC-SL-C (Low-aktiv), 10 A / 250 VAC |
-| LEDs | 3 × (blau / grün / rot) mit je 330 Ω Vorwiderstand |
+| LEDs | direkt am GPIO: rot 120 Ω (U_f ≈ 2,1 V), blau + grün je 100 Ω (U_f ≈ 3,0–3,2 V @ 20 mA) |
 | Spannungsteiler | 10 kΩ + 20 kΩ (Sensor 5 V → 3,3 V für den ESP32) |
 | Versorgung | 5 V (USB oder Netzteil an VIN/5V) |
 
@@ -32,9 +32,9 @@ Knopf zum Zurücksetzen des Zählers.
                  +---------------------------------------------+
       5V  ───────┤ 5V/VIN                                  27  ├──< Sensor-Signal (über Teiler)
       GND ──┬────┤ GND.1                                   26  ├──> Relais IN
-            │    │                                         33  ├──[330Ω]──▶|── GND   blaue LED  (Fluss)
-            │    │                                         25  ├──[330Ω]──▶|── GND   grüne LED  (Relais/Ozon)
-            │    │                                         32  ├──[330Ω]──▶|── GND   rote  LED  (Fehler)
+            │    │                                         33  ├──[100Ω]──▶|── GND   blaue LED (Fluss)
+            │    │                                         25  ├──[100Ω]──▶|── GND   grüne LED (Relais/Ozon)
+            │    │                                         32  ├──[120Ω]──▶|── GND   rote  LED (Fehler)
             │    +---------------------------------------------+
             └──────────── gemeinsame Masse (GND) ─────────────┘
 
@@ -46,6 +46,15 @@ Knopf zum Zurücksetzen des Zählers.
    │ Gelb  (Signal)──► Teiler ─► GPIO27                     [ R2 = 20kΩ ]
    └──────────────┘                                              │
                                                                 GND
+
+  LEDs (alle direkt am GPIO):   GPIO ──[R]── LED-Anode ─▶|─ Kathode ── GND
+    rot  (GPIO32): R = 120 Ω  → ~10 mA
+    blau (GPIO33): R = 100 Ω  → ~3–6 mA (U_f sinkt bei kleinen Strömen unter 3 V)
+    grün (GPIO25): R = 100 Ω  → ~3–6 mA
+  Hinweis: Blau/Grün leuchten so etwas gedämpfter als mit voller 20-mA-
+  Ansteuerung — als Statusanzeige gut sichtbar. Falls zu dunkel: LED über
+  BC547-Transistor an 5 V schalten (LED: 5V→┤▶├→100Ω→Kollektor, Emitter→GND,
+  Basis über 1 kΩ an den GPIO; BC547 flache Seite zu dir = C·B·E von links).
 
   Relais-Modul SRD-05VDC-SL-C            220 V-Seite  ⚠️ LEBENSGEFAHR:
    VCC ─── 5V                             COM ─── Netz L (Phase)
@@ -60,9 +69,9 @@ Knopf zum Zurücksetzen des Zählers.
 |---|---|---|
 | Flow-Sensor Signal (gelb) | **GPIO 27** | über Spannungsteiler 10k/20k |
 | Relais IN | **GPIO 26** | Relaismodul IN (Low-aktiv) |
-| LED blau (Wasserfluss) | **GPIO 33** | → 330 Ω → LED → GND |
-| LED grün (Relais/Ozon) | **GPIO 25** | → 330 Ω → LED → GND |
-| LED rot (Fehler) | **GPIO 32** | → 330 Ω → LED → GND |
+| LED blau (Wasserfluss) | **GPIO 33** | → 100 Ω → LED → GND |
+| LED grün (Relais/Ozon) | **GPIO 25** | → 100 Ω → LED → GND |
+| LED rot (Fehler) | **GPIO 32** | → 120 Ω → LED → GND |
 | 5 V | 5V / VIN | Sensor VCC, Relais VCC |
 | GND | GND | Sensor, Relais, LED-Kathoden (Sternmasse) |
 
