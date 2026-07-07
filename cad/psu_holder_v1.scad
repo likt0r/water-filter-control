@@ -50,7 +50,7 @@ mod_height = 16;
 // Platinendicke
 pcb_thick  = 1.0;
 // Spiel rundum im Rahmen (größer = leichter einlegbar)
-fit_tol    = 0.4;
+fit_tol    = 0.9;
 
 /* [USB-Buchse - an der langen Wand, mittig] */
 // Breite der USB-A-Buchse entlang der Kante (X)
@@ -62,6 +62,16 @@ usb_from_mid = 0;
 // Auf welcher langen Wand: +1 = +Y, -1 = -Y
 usb_side     = 1;
 
+/* [Power-/AC-Anschluss - übersteht die Platine, Aussparung wie USB] */
+// Breite der Aussparung entlang der Kante (X)
+pwr_w        = 18;
+// Höhe über der Platinenoberkante
+pwr_h        = 7;
+// Versatz aus der Mitte entlang X (negativ = links); Default: links bis Mitte
+pwr_from_mid = -9;
+// Auf welcher langen Wand: +1 = +Y, -1 = -Y (Default gegenüber USB)
+pwr_side     = -1;
+
 /* [Rahmen] */
 // Wandstärke des Rahmens
 wall = 2.0;
@@ -72,16 +82,18 @@ seat_h = 3.0;
 ledge_w = 1.5;
 // Rahmenhöhe über der Plattenoberseite
 frame_h = 5.0;
+// Eckenfreistich im Innenraum (FDM verrundet Innenecken -> Platinenecke frei)
+corner_relief = 2.5;
 
 /* [Schnapp-Finger (an den kurzen Enden)] */
 // Breite eines Fingers (entlang Y)
 finger_w = 10;
 // Dicke/Stärke eines Fingers (dünner = weicher/federnder)
-finger_th = 2.0;
+finger_th = 1.2;
 // Seitliches Spiel um den Finger (Schlitz zum Federn)
-finger_gap = 1.0;
+finger_gap = 1.5;
 // Überstand der Haltenase nach innen (greift über die Platine)
-hook_over = 1.2;
+hook_over = 0.8;
 // Höhe der Haltenase
 hook_h = 1.5;
 
@@ -145,9 +157,16 @@ module frame() {
             translate([0, 0, -eps])
                 linear_extrude(height=frame_h+2*eps)
                     square([in_len, in_wid], center=true);
+            // Eckenfreistiche (scharfe Platinenecken passen trotz FDM-Radius)
+            for (sx = [-1, 1], sy = [-1, 1])
+                translate([sx*in_len/2, sy*in_wid/2, -eps])
+                    cylinder(h=frame_h+2*eps, d=corner_relief);
             // USB-Aussparung in der langen (usb_side) Wand, mittig
             translate([usb_from_mid, usb_side*out_wid/2, seat_h + usb_h/2])
                 cube([usb_w, 4*wall, (frame_h) + 2*usb_h], center=true);
+            // Aussparung für Power-/AC-Anschluss (übersteht die Platine)
+            translate([pwr_from_mid, pwr_side*out_wid/2, seat_h + pwr_h/2])
+                cube([pwr_w, 4*wall, (frame_h) + 2*pwr_h], center=true);
             // Fenster für die Schnapp-Finger an beiden kurzen Enden
             for (sx = [-1, 1])
                 translate([sx*out_len/2, 0, (frame_h)/2])
@@ -164,6 +183,15 @@ module frame() {
             // Ledge an der USB-Stelle weglassen
             translate([usb_from_mid, usb_side*in_wid/2, seat_h/2])
                 cube([usb_w, 2*ledge_w+2*eps, seat_h+2*eps], center=true);
+            // Ledge an der Power-Stelle weglassen
+            translate([pwr_from_mid, pwr_side*in_wid/2, seat_h/2])
+                cube([pwr_w, 2*ledge_w+2*eps, seat_h+2*eps], center=true);
+            // Ledge an den Finger-Stellen weglassen -> Finger kann frei federn
+            // (sonst versteift der 3-mm-Absatz den Finger bis kurz unter die Nase)
+            for (sx = [-1, 1])
+                translate([sx*(in_len/2 - ledge_w/2), 0, seat_h/2])
+                    cube([ledge_w+2*eps, finger_w+2*finger_gap, seat_h+2*eps],
+                         center=true);
         }
     }
 }
