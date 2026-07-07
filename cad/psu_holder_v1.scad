@@ -49,8 +49,8 @@ pcb_y      = 31;
 mod_height = 16;
 // Platinendicke
 pcb_thick  = 1.0;
-// Spiel rundum im Rahmen (größer = leichter einlegbar)
-fit_tol    = 0.9;
+// Spiel rundum im Rahmen (größer = leichter einlegbar, aber weniger Griff)
+fit_tol    = 0.5;
 
 /* [USB-Buchse - an der langen Wand, mittig] */
 // Breite der USB-A-Buchse entlang der Kante (X)
@@ -89,13 +89,16 @@ corner_relief = 2.5;
 // Breite eines Fingers (entlang Y)
 finger_w = 10;
 // Dicke/Stärke eines Fingers (dünner = weicher/federnder)
-finger_th = 1.2;
+finger_th = 1.0;
 // Seitliches Spiel um den Finger (Schlitz zum Federn)
 finger_gap = 1.5;
 // Überstand der Haltenase nach innen (greift über die Platine)
-hook_over = 0.8;
-// Höhe der Haltenase
-hook_h = 1.5;
+// Griff = hook_over - fit_tol/2 ; höher = fester (aber mehr Federweg nötig)
+hook_over = 1.1;
+// Höhe der Haltenase (höher = flachere/längere Einführschräge)
+hook_h = 1.8;
+// Tiefe des Wurzel-Freistichs in der Platte (Finger federt tiefer -> hält Federweg aus)
+finger_root_relief = 2.0;
 
 /* [Platte & Befestigung (Löcher AUSSERHALB der Platine)] */
 // Plattendicke
@@ -126,6 +129,7 @@ plate_x = max(out_len, screw_dx + 2*ear);
 plate_y = max(out_wid, screw_dy + 2*ear);
 grip_z  = plate_thick + seat_h + pcb_thick;   // z der Platinen-Oberkante
 fin_top = grip_z + hook_h;                    // Oberkante der Finger
+fin_root_z = plate_thick - finger_root_relief; // Einspannhöhe (tiefer = weicher)
 
 // ---------------------------------------------------------------- Hilfsformen
 module rrect(l, w, h, r) {
@@ -144,6 +148,15 @@ module base_plate() {
                 translate([0, 0, plate_thick-screw_head_h])
                     cylinder(h=screw_head_h+eps, d=screw_head_d);
             }
+        // Wurzel-Freistich: gibt jeden Finger auch über die Plattendicke frei,
+        // damit er tiefer (ab fin_root_z) federt und den Federweg aushält.
+        // Lässt ~ (plate_thick - finger_root_relief) mm Boden stehen.
+        if (finger_root_relief > 0)
+            for (sx = [-1, 1])
+                translate([sx*(in_len/2 + finger_th/2), 0,
+                           (fin_root_z + plate_thick + eps)/2])
+                    cube([finger_th + 2*finger_gap, finger_w + 2*finger_gap,
+                          plate_thick + eps - fin_root_z], center=true);
     }
 }
 
@@ -201,9 +214,11 @@ module frame() {
 // Nase, die nach innen über die Platine greift. Unterseite als Rampe.
 module snap_finger() {
     xi = in_len/2;                         // Innenfläche der kurzen Wand (+X)
-    // Fingerkörper (ersetzt das Wandsegment, federt nach +X)
-    translate([xi + finger_th/2, 0, (plate_thick + fin_top)/2])
-        cube([finger_th, finger_w, fin_top - plate_thick], center=true);
+    // Fingerkörper (ersetzt das Wandsegment, federt nach +X).
+    // Läuft bis zum Plattenboden (verschweißt mit dem 1-mm-Restboden), federt aber
+    // erst ab fin_root_z frei (Freistich) -> längerer Hebel, hält den Federweg aus.
+    translate([xi + finger_th/2, 0, fin_top/2])
+        cube([finger_th, finger_w, fin_top], center=true);
     // Haltenase mit Rampen-Unterseite (Einführschräge)
     hull() {
         translate([xi - hook_over/2, 0, grip_z + hook_h/2])
